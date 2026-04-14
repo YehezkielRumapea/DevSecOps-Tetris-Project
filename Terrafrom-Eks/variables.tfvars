@@ -1,0 +1,11 @@
+variable "jenkins-vpc" {}
+variable "jenkins-igw" {}
+variable "jenkins-subnet" {}
+variable "jenkins-subnet2" {}
+variable "jenkins-security-group" {}
+variable "tetris-iam-role-eks" {}
+variable "tetris-iam-role-ec2" {}
+variable "tetris-iam-policy-eks" {}
+variable "tetris-iam-policy-node" {}
+variable "tetris-EKS-cluster" {}
+variable "tetris-node-group" {}

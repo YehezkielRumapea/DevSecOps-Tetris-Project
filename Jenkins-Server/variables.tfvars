@@ -1,0 +1,8 @@
+vpc-name = "Jenkins-vpc"
+igw-name = "Jenkins-igw"
+subnet-name = "Jenkins-public-subnet"
+rt-name = "Jenkins-public-rt"
+sg-name = "Jenkins-sg"
+instance-name = "Jenkins-Server"
+key-name = "Tetris_App"
+iam-role = "Jenkins-iam-role"

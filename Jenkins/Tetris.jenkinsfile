@@ -1,0 +1,104 @@
+pipeline {
+    agent any
+    tools {
+        nodejs 'nodejs'
+    }
+    environment {
+        SCANNER_HOME = tool 'sonar-scanner'
+    }
+    stages {
+        stage('Cleaning Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+        stage('checkout from git') {
+            steps {
+                git branch: 'master', url: 'https://github.com/YehezkielRumapea/DevSecOps-Tetris-Project.git'
+            }
+        }
+        stage('sonarqube analysis') {
+            steps {
+                dir('Tetris-V1') {
+                    withSonarQubeEnv('sonar-scanner') {
+                        sh ''' $SCANNER_HOME/bin/sonar-scanner \
+                            -Dsonar.projectName=Tetris '''
+                    }
+                }
+            }
+        }
+        stage('Quality check') {
+            steps {
+                script {
+                    waitForQualityGate abortPipeline: false, credentialsId: 'sonar-token'
+                }
+            }
+        }
+        stage('Initialing Dependencies') {
+            steps {
+                dir('Tetris-V1') {
+                    sh 'npm install'
+                }
+            }
+        }
+        stage('owasp dependency check') {
+            steps {
+                dir('Tetris-V1') {
+                    dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-CHECK'
+                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
+                }
+            }
+        }
+        stage('Trivy Check scan') {
+            steps {
+                dir('Tetris-V1') {
+                    sh 'trivy fs . > trivy-report.txt'
+                }
+            }
+        }
+        stage('docker image builf') {
+            steps {
+                script {
+                    withDockerRegistry(credentialsID: 'docker', toolname: 'docker') {
+                        sh 'docker tag tetrisV1 avian19/tetris:v1:${BUILD_NUMBER}'
+                        sh 'docker push avian19/tetris:v1:${BUILD_NUMBER}'
+                    }
+                }
+            }
+        }
+        stage('Trivy image scan') {
+            steps {
+                sh 'trivy image avian19/tetris:v1:${BUILD_NUMBER} > trivy-image-report.txt'
+            }
+        }
+        stage('checkout code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/YehezkielRumapea/DevSecOps-Tetris-Project.git'
+            }
+        }
+        stage('update depioyment file') {
+            environment {
+                GIT_REPO_NAME = "DevSecOps-Tetris-Project"
+                GIT_USER_NAME = "YehezkielRumapea"
+            }
+            steps {
+                dir('Manifest') {
+                    withCredentials([string(credentialsId: 'github', variable: 'GITHUB_TOKEN')]) {
+                        sh '''
+                            git config --global user.email "rumapeayehezkiel@gmail.com"
+                            git config --global user.name "YehezkielRumapea"
+                            BUILD_NUMBER=${BUILD_NUMBER}
+                            echo $BUILD_NUMBER
+                            imageTag=$(grep -oP '(?<=tetrisv1:)[^ ]+' Deployment.yaml)
+                            echo $imageTag
+                            sed -i "s/tetrisv1:${imageTag}/tetrisv1:${BUILD_NUMBER}/" Deployment.yaml 
+                            git add Deployment.yaml 
+                            git commit -m "Update deployment image tag to version \${BUILD_NUMBER}"
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_REPO_NAME}.git ${GIT_USER_NAME} HEAD:main
+                            '''
+                    }
+                }
+            }
+        }
+    }
+}

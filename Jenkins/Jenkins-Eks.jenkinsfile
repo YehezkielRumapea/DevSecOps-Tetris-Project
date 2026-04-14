@@ -1,0 +1,66 @@
+properties([
+    parameters([
+        string(defaultValue: 'variable.tfvars', description: 'specify the file name', name: 'File-Name'),
+        choice(choices: ['plan', 'apply', 'destroy'], description: 'select terraform action', name: 'Terraform-Action')
+    ])
+])
+
+pipeline{
+    agent any
+    stages{
+        stage("checkout from git"){
+            steps{
+                git branch: 'master', url: 'https://github.com/YehezkielRumapea/Tetris_App.git'
+            }
+        }
+        stage("Initialize Terraform"){
+            steps{
+                withAWS(credentials: 'aws-key', region: 'us-east-1') {
+                    dir('Terraform-Eks')
+                    script{
+                        sh 'terraform init'   
+                    }
+                }
+            }   
+        }
+        stage("Validate Terraform Code") {
+            steps{
+                withAWS(credentials: 'aws-key', region: 'us-east-1') {
+                    dir ('Terraform-Eks')
+                    script{
+                        sh 'terraform validate'
+                    }
+                }
+            }
+        }
+        stage("Terraform Plan"){
+            steps{
+                withAWS(credentials: 'aws-key', region: 'us-east-1') {
+                    dir ('Terraform-Eks')
+                    script{
+                        sh 'terraform plan -var-file=${params.'File-Name'}'
+                    }
+                }
+            }
+        }
+        stage("Terraform Action") {
+            steps{
+                withAWS(credentials: 'aws-key', region: 'us-east-1') {
+                    dir ('Terraform-Eks')
+                    script{
+                        if (params.'Terraform-Action' == 'plan') {
+                            sh "terraform plan -var-file=${params.'File-Name'}"
+                        } else if (params.'Terraform-Action' == 'apply') {
+                            sh "terraform apply --auto approve -var-file=${params.'File-Name'}"
+                        } else if (params.Terraform-action == destroy) {
+                            sh "terraform destroy --auto-approve -var-file=${params.'file-Name'}"
+                        } else {
+                            echo "Invalid Terraform Action: ${params.'Terraform-Action'}"
+                        }
+                        
+                    }
+                }
+            }
+        }
+    }
+}
