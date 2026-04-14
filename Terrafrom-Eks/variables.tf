@@ -1,9 +1,9 @@
 variable "vpc-name" {}
 variable "igw-name" {}
 variable "rt-name2" {}
-variable "subnet_name" {}
-variable "subnet_name2" {}
-variable "sg_name" {}
+variable "subnet-name" {}
+variable "subnet-name2" {}
+variable "sg-name" {}
 variable "iam-role-eks" {}
 variable "iam-role-node" {}
 variable "iam-policy-eks" {}

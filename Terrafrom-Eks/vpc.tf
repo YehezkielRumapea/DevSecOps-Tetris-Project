@@ -15,14 +15,14 @@ data "aws_internet_gateway" "igw" {
 data "aws_subnet" "subnet" {
   filter {
     name = "tag:Name"
-    values = [var.subnet_name]
+    values = [var.subnet-name]
   }
 }
 
 data "aws_security_group" "sg-default" {
     filter {
       name = "tag:Name"
-      values = [var.sg_name]
+      values = [var.sg-name]
     }
 }
 
@@ -33,7 +33,7 @@ resource "aws_subnet" "public_subnet2" {
   map_public_ip_on_launch = true
 
   tags = {
-    Name = var.subnet_name2
+    Name = var.subnet-name2
   }
 }
 
