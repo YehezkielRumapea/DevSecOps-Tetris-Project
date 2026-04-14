@@ -14,9 +14,9 @@ resource "aws_eks_node_group" "tetris-node-group" {
   disk_size = 20
 
   depends_on = [ 
-    aws_iam_group_policy_attachment.AmazonEKS_CNI_Policy,
+    aws_iam_role_policy_attachment.AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.AmazonEKSClusterPolicy,
     aws_iam_role_policy_attachment.AmazonEKSWorkerNodePolicy,
-    aws_iam_group_policy_attachment.AmazonEC2ContainerRegistryReadOnly
+    aws_iam_role_policy_attachment.AmazonEC2ContainerRegistryReadOnly
    ]  
 }

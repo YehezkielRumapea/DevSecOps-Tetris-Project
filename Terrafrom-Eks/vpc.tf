@@ -7,21 +7,21 @@ data "aws_vpc" "vpc" {
 
 data "aws_internet_gateway" "igw" {
   filter {
-    name = "tag.Name"
+    name = "tag:Name"
     values = [var.igw-name]
   }
 }
 
 data "aws_subnet" "subnet" {
   filter {
-    name = "tag.Name"
+    name = "tag:Name"
     values = [var.subnet_name]
   }
 }
 
 data "aws_security_group" "sg-default" {
     filter {
-      name = "tag.Name"
+      name = "tag:Name"
       values = [var.sg_name]
     }
 }
@@ -39,7 +39,7 @@ resource "aws_subnet" "public_subnet2" {
 
 resource "aws_route_table" "rt2" {
   vpc_id = data.aws_vpc.vpc.id
-  route = {
+  route {
     cidr_block = "0.0.0.0/0"
     gateway_id = data.aws_internet_gateway.igw.id
   }
