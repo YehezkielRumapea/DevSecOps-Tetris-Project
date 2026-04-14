@@ -5,7 +5,7 @@ resource "aws_iam_role_policy_attachment" "AmazonEKSClusterPolicy" {
 
 resource "aws_iam_role_policy_attachment" "AmazonEKSWorkerNodePolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
-  role       = aws_iam_role.NodeGroupRole_role.name
+  role       = aws_iam_role.NodeGroupRole.name
 }
 
 resource "aws_iam_role_policy_attachment" "AmazonEC2ContainerRegistryReadOnly" {
