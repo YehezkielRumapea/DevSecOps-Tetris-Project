@@ -2,7 +2,7 @@ resource "aws_eks_node_group" "tetris-node-group" {
   cluster_name = aws_eks_cluster.eks-cluster.name
   node_group_name = var.eksnode-group-name
   node_role_arn = aws_iam_role.NodeGroupRole.arn
-  subnet_ids = [data.aws_subnet.subnet_id, aws_subnet.public_subnet2.id]
+  subnet_ids = [data.aws_subnet.subnet, aws_subnet.public_subnet2.id]
 
   scaling_config {
     desired_size = 2
