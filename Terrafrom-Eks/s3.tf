@@ -3,7 +3,7 @@ terraform {
     bucket = "kiel-bucket"
     region = "us-east-1"
     key = "kiel-project"
-    use_lock_file = true
+    use_lockfile = true
     encrypt = true
   }
   required_version = ">=1.14.0"
