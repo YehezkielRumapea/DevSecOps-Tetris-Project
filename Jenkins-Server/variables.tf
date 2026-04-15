@@ -1,8 +1,9 @@
-variable "vpc-name" {} 
+variable "vpc-name" {}
 variable "igw-name" {}
 variable "sg-name" {}
 variable "rt-name" {}
 variable "subnet-name" {}
 variable "instance-name" {}
+variable "sonar-instance-name" {}
 variable "key-name" {}
 variable "iam-role" {}
