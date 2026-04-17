@@ -15,9 +15,8 @@ java --version
 
 # Install Jenkins
 echo "[2/7] Install Jenkins..."
-sudo apt install -y gnupg wget curl
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key | sudo tee /etc/apt/keyrings/jenkins-keyring.asc > /dev/null
+sudo wget -O /etc/apt/keyrings/jenkins-keyring.asc \
+  https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
 echo "deb [signed-by=/etc/apt/keyrings/jenkins-keyring.asc] https://pkg.jenkins.io/debian-stable binary/" | \
   sudo tee /etc/apt/sources.list.d/jenkins.list > /dev/null
 sudo apt update
@@ -35,7 +34,6 @@ sudo chmod a+r /etc/apt/keyrings/docker.asc
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
   https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
   sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt update
 sudo apt install -y docker-ce docker-ce-cli containerd.io
 sudo usermod -aG docker jenkins
 sudo usermod -aG docker ubuntu
@@ -53,7 +51,6 @@ wget -O- https://apt.releases.hashicorp.com/gpg | \
 echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
   https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
   sudo tee /etc/apt/sources.list.d/hashicorp.list
-sudo apt update
 sudo apt install -y terraform
 terraform --version
 
@@ -82,7 +79,6 @@ wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | \
 sudo rm -f /etc/apt/sources.list.d/trivy.list
 echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb generic main" | \
   sudo tee /etc/apt/sources.list.d/trivy.list
-sudo apt-get update
 sudo apt-get install -y trivy
 trivy --version
 
