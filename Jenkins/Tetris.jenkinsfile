@@ -107,7 +107,7 @@ pipeline {
                             sed -i "s/tetrisv1:${imageTag}/tetrisv1:${BUILD_NUMBER}/" Deployment.yaml 
                             git add Deployment.yaml 
                             git commit -m "Update deployment image tag to version \${BUILD_NUMBER}"
-                            git push https://${GITHUB_TOKEN}@github.com/${GIT_REPO_NAME}.git HEAD:main
+                            git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
                             '''
                     }
                 }
