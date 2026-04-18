@@ -63,7 +63,7 @@ pipeline {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                         sh 'docker system prune -f'
-                        sh 'docker build -t App/tetrisV1 .'
+                        sh 'docker build -t tetrisv1 App/Tetris-V1'
                     }
                 }
             }   
@@ -73,15 +73,15 @@ pipeline {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh 'docker tag tetrisV1 avian19/tetris:v1-${BUILD_NUMBER}'
-                        sh 'docker push avian19/tetris:v1-${BUILD_NUMBER}'
+                        sh 'docker tag tetrisv1 yehezkielrumpet/tetris:v1-${BUILD_NUMBER}'
+                        sh 'docker push yehezkielrumpet/tetris:v1-${BUILD_NUMBER}'
                     }
                 }
             }
         }
         stage('Trivy image scan') {
             steps {
-                sh 'trivy image avian19/tetris:v1-${BUILD_NUMBER} > trivy-image-report.txt'
+                sh 'trivy image yehezkielrumpet/tetris:v1-${BUILD_NUMBER} > trivy-image-report.txt'
             }
         }
         stage('checkout code') {
