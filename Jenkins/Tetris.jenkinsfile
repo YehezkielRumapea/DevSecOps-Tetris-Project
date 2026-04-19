@@ -8,9 +8,10 @@ pipeline {
     }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
-        APP_DIR      = "App/Tetris-${params.APP_VERSION.toUpperCase()}"
-        IMAGE_NAME   = "tetris${params.APP_VERSION}"
-        IMAGE_TAG    = "yehezkielrumpet/tetris:${params.APP_VERSION}-${BUILD_NUMBER}"
+        APP_VERSION  = "${params.APP_VERSION ?: 'v1'}"
+        APP_DIR      = "App/Tetris-${APP_VERSION.toUpperCase()}"
+        IMAGE_NAME   = "tetris${APP_VERSION}"
+        IMAGE_TAG    = "yehezkielrumpet/tetris:${APP_VERSION}-${BUILD_NUMBER}"
     }
     stages {
         stage('Cleaning Workspace') {
