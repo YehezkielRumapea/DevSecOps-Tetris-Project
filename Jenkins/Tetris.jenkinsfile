@@ -3,8 +3,14 @@ pipeline {
     tools {
         nodejs 'nodejs'
     }
+    parameters {
+        choice(choices: ['v1', 'v2'], description: 'Pilih versi Tetris', name: 'APP_VERSION')
+    }
     environment {
         SCANNER_HOME = tool 'sonar-scanner'
+        APP_DIR      = "App/Tetris-${params.APP_VERSION.toUpperCase()}"
+        IMAGE_NAME   = "tetris${params.APP_VERSION}"
+        IMAGE_TAG    = "yehezkielrumpet/tetris:${params.APP_VERSION}-${BUILD_NUMBER}"
     }
     stages {
         stage('Cleaning Workspace') {
@@ -19,7 +25,7 @@ pipeline {
         }
         stage('sonarqube analysis') {
             steps {
-                dir('App/Tetris-V1') {
+                dir("${APP_DIR}") {
                     withSonarQubeEnv('sonar-scanner') {
                         sh ''' $SCANNER_HOME/bin/sonar-scanner \
                             -Dsonar.projectName=Tetris \
@@ -37,14 +43,14 @@ pipeline {
         }
         stage('Initialing Dependencies') {
             steps {
-                dir('App/Tetris-V1') {
+                dir("${APP_DIR}") {
                     sh 'npm install'
                 }
             }
         }
         stage('owasp dependency check') {
             steps {
-                dir('App/Tetris-V1') {
+                dir("${APP_DIR}") {
                     dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'dp-check'
                     dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
                 }
@@ -52,36 +58,34 @@ pipeline {
         }
         stage('Trivy Check scan') {
             steps {
-                dir('App/Tetris-V1') {
+                dir("${APP_DIR}") {
                     sh 'trivy fs . > trivy-report.txt'
                 }
             }
         }
-
         stage('docker image build') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
                         sh 'docker system prune -f'
-                        sh 'docker build -t tetrisv1 App/Tetris-V1'
+                        sh "docker build -t ${IMAGE_NAME} ${APP_DIR}"
                     }
                 }
-            }   
+            }
         }
-
         stage('docker image push') {
             steps {
                 script {
                     withDockerRegistry(credentialsId: 'docker', toolName: 'docker') {
-                        sh 'docker tag tetrisv1 yehezkielrumpet/tetris:v1-${BUILD_NUMBER}'
-                        sh 'docker push yehezkielrumpet/tetris:v1-${BUILD_NUMBER}'
+                        sh "docker tag ${IMAGE_NAME} ${IMAGE_TAG}"
+                        sh "docker push ${IMAGE_TAG}"
                     }
                 }
             }
         }
         stage('Trivy image scan') {
             steps {
-                sh 'trivy image yehezkielrumpet/tetris:v1-${BUILD_NUMBER} > trivy-image-report.txt'
+                sh "trivy image ${IMAGE_TAG} > trivy-image-report.txt"
             }
         }
         stage('checkout code') {
@@ -89,7 +93,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/YehezkielRumapea/DevSecOps-Tetris-Project.git'
             }
         }
-        stage('update depioyment file') {
+        stage('update deployment file') {
             environment {
                 GIT_REPO_NAME = "DevSecOps-Tetris-Project"
                 GIT_USER_NAME = "YehezkielRumapea"
@@ -100,15 +104,11 @@ pipeline {
                         sh '''
                             git config --global user.email "rumapeayehezkiel@gmail.com"
                             git config --global user.name "YehezkielRumapea"
-                            BUILD_NUMBER=${BUILD_NUMBER}
-                            echo $BUILD_NUMBER
-                            imageTag=$(grep -oP '(?<=tetris:v1-)[^ ]+' Deployment.yaml)
-                            echo $imageTag
-                            sed -i "s/tetris:v1-${imageTag}/tetris:v1-${BUILD_NUMBER}/" Deployment.yaml
-                            git add Deployment.yaml 
-                            git commit -m "Update deployment image tag to version \${BUILD_NUMBER}"
+                            sed -i "s|image: yehezkielrumpet/tetris:.*|image: yehezkielrumpet/tetris:${APP_VERSION}-${BUILD_NUMBER}|" Deployment.yaml
+                            git add Deployment.yaml
+                            git commit -m "Update deployment image to ${APP_VERSION}-${BUILD_NUMBER}"
                             git push https://${GITHUB_TOKEN}@github.com/${GIT_USER_NAME}/${GIT_REPO_NAME}.git HEAD:main
-                            '''
+                        '''
                     }
                 }
             }
